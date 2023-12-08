@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Fetch productos</title>
+
+    <style>
+        #resultado{
+            display: grid;
+            gap: 30px;
+            grid-template-columns: 400px 400px;
+            width: 100vw;
+            margin: 0 auto;
+        }
+
+        .divInterno{
+            border: 1px solid gray;
+            border-radius: 5%;
+            text-align: center;
+        }
+
+        img{
+            max-width: 130px;
+            max-height: 130px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="resultado"></div>
+    <div id="botones"></div>
+</body>
+
+    <script type="text/javascript">
+        let divResultado = document.querySelector("#resultado");
+        let resultado;
+        let numProdPag = 4;
+        let totalProd = 40;
+
+        consultar();
+        paginacion();
+
+        function consultar(){
+            fetch(`https://dummyjson.com/products?limit=${totalProd}`)
+            .then(respuesta => respuesta.json())
+            .then(datos => resultado =datos)
+            .then(() => procesar(1))
+            .catch(function(error){//cachamos errores ya sea por internet o algun error en la direccion//
+                console.log("No se realizo la peticion Fetch, error: "+ error)
+                document.querySelector("#resultado").innerHTML= "<h2> No se realizo la peticion Fetch, error: "+ error + "<h2>"});
+        }
+        
+        function procesar(pag){//esto son los datos que trae el fetch no una variable//
+            let fragmento = new DocumentFragment();
+            console.log(resultado.products.length);
+            console.log("Pagina numero: " + pag)
+            let totalProductos = resultado.products.length;
+            let limiteSuperior = (numProdPag*pag)-1;
+            let limiteInferior = limiteSuperior-3;
+            for( i=limiteInferior; i<=limiteSuperior; i++){
+                let productoActual = resultado.products[i];
+                let nuevoDiv = document.createElement("div");
+                nuevoDiv.classList.add("divInterno");
+                let titulo = document.createElement("h2");
+                titulo.textContent = productoActual.title;
+                console.log(nuevoDiv);
+                nuevoDiv.appendChild(titulo);
+                //agregar con un parrafo la descripcion en h2 el precio y en imagen la imagen de thumbnail
+                let descripcion = document.createElement("p");
+                 descripcion.textContent = productoActual.description;
+
+                 let precio = document.createElement("h2");
+                precio.textContent = `Precio: $ ${productoActual.price} pejecoins weros`;
+
+                let imagen = document.createElement("img");
+                imagen.src = productoActual.thumbnail;
+
+                nuevoDiv.appendChild(titulo);
+                nuevoDiv.appendChild(descripcion);
+                nuevoDiv.append(precio);
+                
+                nuevoDiv.appendChild(imagen);
+
+                fragmento.appendChild(nuevoDiv);
+
+
+            }
+
+            divResultado.appendChild(fragmento);
+
+        }
+
+        function paginacion(){
+            let totalBotones = totalProd/numProdPag
+            let divBotones = document.querySelector("#botones")
+            let botonNuevo;
+            for(let i = 1; i<=totalBotones;i++){
+                botonNuevo = document.createElement('button')
+                botonNuevo.addEventListener("click",() => {
+                    divResultado.innerHTML = "";
+                    procesar(i);
+                });
+                botonNuevo.value = i;
+                botonNuevo.textContent = i;
+                divBotones.appendChild(botonNuevo);
+            }
+
+        }
+    </script>
+
+
+</html>
